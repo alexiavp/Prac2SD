@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-
-class Master:
-    __instance = None
-
-    def __new__(cls, *args):
-        if cls.__instance is None:
-            cls.__instance = object.__new__(cls)
-        return cls.__instance
+import csv
+def read_csv (file):
+    csv.reader(file, delimiter=" ", quotechar="")
+# Funciones a implementar read_csv,  apply, columns, groupby, head, isin, items, max, min #
