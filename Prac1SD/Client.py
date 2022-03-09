@@ -3,6 +3,7 @@ from xmlrpc.server import SimpleXMLRPCServer
 from xmlrpc.server import SimpleXMLRPCRequestHandler
 import redis
 cliente:
+master añadir eliminar listar
 primero pregunta quien esta conectado al cluster (pregunta por los workers)
 El propio worker solicita al cluster añadirse
 CLuster añade y una vez todos conectados devuelve la lista
