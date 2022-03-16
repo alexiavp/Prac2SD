@@ -1,9 +1,7 @@
 from xmlrpc.server import SimpleXMLRPCServer
 # from multiprocessing import Process
 import Worker
-
-
-# import redis
+ # import redis
 
 
 class Cluster:
