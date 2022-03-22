@@ -1,22 +1,19 @@
 import pandas as pd
-# import xmlrpc.client
+import xmlrpc.client
 from xmlrpc.server import SimpleXMLRPCServer
-from xmlrpc.server import SimpleXMLRPCRequestHandler
 
 df = None
 
 
-# server = xmlrpc.client.ServerProxy('http://localhost:8000')
+cluster = xmlrpc.client.ServerProxy('http://localhost:9000')
 
-# Restrict to a particular path.
-class RequestHandler(SimpleXMLRPCRequestHandler):
-    rpc_paths = ('/RPC2',)
-
+# Add worker to cluster.
+print("Getting ready the worker...")
+port = input("In which port is the worker working?\n")
+print(cluster.add('http://localhost'+str(port)))
 
 # Create server
-with SimpleXMLRPCServer(('localhost', 8000),
-                        requestHandler=RequestHandler) as server:
-    server.register_introspection_functions()
+with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as server:
 
     def load_csv(name):
         global df
@@ -40,8 +37,8 @@ with SimpleXMLRPCServer(('localhost', 8000),
         return str(df.columns.values)
     server.register_function(columns_function, 'col')
 
-    def groupby_function():
-        return str(df.groupby)
+    def groupby_function(label):
+        return str(df.groupby([label]).mean())
     server.register_function(groupby_function, 'groupby')
 
     def items_function():
