@@ -21,6 +21,7 @@ def menu():
     print("5. First five lines")
     print("6. Group by a column")
     print("7. Function items")
+    print("8. Function isin with 42 and 59")
     print("Option chosen:\n")
 
 
@@ -49,5 +50,10 @@ while ex:
         print("Dataframe grouped by" + label + "\n" + worker.groupby('City'))
     elif op == 7:
         print("The function items in the dataframe:\n" + worker.items())
+    elif op == 8:
+        print("The function isin in the dataframe with 42 and 59\n" + worker.isin([42, 59]))
+    elif op == 9:
+        code = input("Enter code : ")
+        print("The function isin in the dataframe with 42 and 59\n" + worker.apply())
     else:
         print("Option not valid chose another one")

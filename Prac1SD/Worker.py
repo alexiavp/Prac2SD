@@ -1,7 +1,7 @@
 import pandas as pd
 import xmlrpc.client
 from xmlrpc.server import SimpleXMLRPCServer
-
+import numpy as np
 df = None
 
 
@@ -33,9 +33,18 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as server:
         return str(df[col].max(axis=0))
     server.register_function(maximum_function, 'max')
 
+    def isin_function(list):
+        return str(df.isin(list))
+    server.register_function(isin_function, 'isin')
+
     def columns_function():
         return str(df.columns.values)
     server.register_function(columns_function, 'col')
+
+    def apply_function():
+        func = eval('lambda num1,num2: num1 + num2')
+        return str((func(2, 3)))
+    server.register_function(apply_function, 'apply')
 
     def groupby_function(label):
         return str(df.groupby([label]).mean())
