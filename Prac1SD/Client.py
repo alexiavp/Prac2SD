@@ -1,11 +1,14 @@
-#!/usr/bin/env python3
+import time
 import xmlrpc.client
-
 # import redis
-cluster = xmlrpc.client.ServerProxy('http://localhost:9000')
-workers = cluster.get()
-while workers:
-    worker = xmlrpc.client.ServerProxy(workers)
+
+# cluster = xmlrpc.client.ServerProxy('http://localhost:9001')
+# workers = cluster.get()
+# print(workers)
+# while workers:
+#     worker = xmlrpc.client.ServerProxy(workers)
+
+worker = xmlrpc.client.ServerProxy('http://localhost:8000')
 
 
 def menu():
@@ -23,7 +26,8 @@ def menu():
 
 ex = True
 while ex:
-    op = input(menu())
+    menu()
+    op = int(input())
     if op == 0:
         ex = False
     elif op == 1:
