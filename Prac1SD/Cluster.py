@@ -17,6 +17,10 @@ with SimpleXMLRPCServer(('localhost', 9000)) as cluster:
         return "Worker added successfully!"
     cluster.register_function(add_worker, 'add')
 
+    def get_workers():
+        return str(workers)
+    cluster.register_function(get_workers, 'get')
+
     # Run the server's main loop
     cluster.serve_forever()
 

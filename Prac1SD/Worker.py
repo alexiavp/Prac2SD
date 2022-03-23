@@ -53,6 +53,3 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as server:
     server.serve_forever()
 
 
-# print(df.columns.values[2])
-# print(df.items)
-
