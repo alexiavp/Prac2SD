@@ -1,3 +1,4 @@
+import sys
 from xmlrpc.server import SimpleXMLRPCServer
 # # from multiprocessing import Process
 # import Worker
@@ -10,6 +11,8 @@ cont_workers = 0
 
 with SimpleXMLRPCServer(('localhost', 9000)) as cluster:
 
+    def close_conexion():
+        sys.exit(0)
     def add_worker(url):
         global cont_workers
         workers[cont_workers] = url
@@ -22,23 +25,10 @@ with SimpleXMLRPCServer(('localhost', 9000)) as cluster:
     cluster.register_function(get_workers, 'get')
 
     # Run the server's main loop
-    cluster.serve_forever()
+    try:
+        print("Ctrl+C to exit!")
+        cluster.serve_forever()
+    except KeyboardInterrupt:
+        print("\nKeyboard interrupt received, exiting.")
+        sys.exit(0)
 
-#         cluster.register_function(cluster.add_worker)
-#
-#         def remove_worker(id_worker, workers=None):
-#             try:
-#                 workers.pop(id_worker).stop()
-#             except KeyError:
-#                  print("This worker doesn't exists!")
-#             return True
-#
-#         cluster.register_function(cluster.remove_worker)
-#
-#         def list_workers(workers=None):
-#           return list(workers.keys())
-#
-#         cluster.register_function(cluster.list_workers)
-#
-#
-#         cluster.serve_forever()

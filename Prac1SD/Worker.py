@@ -1,3 +1,4 @@
+import sys
 import pandas as pd
 import xmlrpc.client
 from xmlrpc.server import SimpleXMLRPCServer
@@ -6,11 +7,11 @@ df = None
 
 
 cluster = xmlrpc.client.ServerProxy('http://localhost:9000')
-
 # Add worker to cluster.
 print("Getting ready the worker...")
 port = input("In which port is the worker working?\n")
-print(cluster.add('http://localhost'+str(port)))
+print(cluster.add('http://localhost:'+str(port)))
+
 
 # Create server
 with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as server:
@@ -59,6 +60,11 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as server:
     server.register_function(head_function, 'head')
 
     # Run the server's main loop
-    server.serve_forever()
+    try:
+        print("Ctrl+C to exit!")
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\nKeyboard interrupt received, exiting.")
+        sys.exit(0)
 
 
