@@ -6,40 +6,44 @@ class Workers:
     cluster = xmlrpc.client.ServerProxy('http://localhost:9000')
     aux = cluster.get()
     w = aux.split('\'')
+    print(w)
     i = 0
     w.pop(0)
     for x in w:
+        print(w)
         if i % 2 == 1:
             w.pop(i)
         i = i + 1
 
-    w.pop(i - 1)
+    w.pop(i)
     aux = 0
     for x in w:
-        workers[aux] = xmlrpc.client.ServerProxy(x)
+        print(x)
+        # workers[aux] = xmlrpc.client.ServerProxy(x)
         aux = aux + 1
 
-    def submit_task(funct, args):
+    def submit_task(args):
         global workers
         for x in workers:
             results = x.funct(args)
 
 
-class Client:
-    Workers
-    ex = True
+def menu():
+    print("Choose a function for the workers:")
+    print("0. Exit!")
+    print("1. Read file")
+    print("2. Get the minimum")
+    print("3. Get the maximum")
+    print("4. Get labels")
+    print("5. First five lines")
+    print("6. Group by a column")
+    print("7. Function items")
+    print("Option chosen:\n")
 
-    def menu(self):
-        print("Choose a function for the workers:")
-        print("0. Exit!")
-        print("1. Read file")
-        print("2. Get the minimum")
-        print("3. Get the maximum")
-        print("4. Get labels")
-        print("5. First five lines")
-        print("6. Group by a column")
-        print("7. Function items")
-        print("Option chosen:\n")
+
+class Client:
+    # Workers
+    ex = True
 
     if __name__ == "__main__":
 
@@ -47,11 +51,11 @@ class Client:
             menu()
             op = int(input())
             if op == 0:
-               ex = False
+                ex = False
             elif op == 1:
                 file = input("Enter a file's name (without extension):\n")
                 file = file + ".csv"
-                print(Workers.submit_task("read", file))
+                print(Workers.submit_task(file))
             # print(worker.head())
         # elif op == 2:
         #     label = input("From which colum do you want to know the minimum:\n")
@@ -70,6 +74,3 @@ class Client:
         #     # print("The function items in the dataframe:\n" + worker.items())
         else:
             print("Option not valid chose another one")
-
-
-
