@@ -1,31 +1,18 @@
 import xmlrpc.client
 
+workers = []
+cluster = xmlrpc.client.ServerProxy('http://localhost:9000')
 
-class Workers:
-    workers = {}
-    cluster = xmlrpc.client.ServerProxy('http://localhost:9000')
+
+def get_workers():
+    global workers, cluster
     aux = cluster.get()
     w = aux.split('\'')
-    print(w)
     i = 0
-    w.pop(0)
     for x in w:
-        print(w)
         if i % 2 == 1:
-            w.pop(i)
+            workers.append(xmlrpc.client.ServerProxy(x))
         i = i + 1
-
-    w.pop(i)
-    aux = 0
-    for x in w:
-        print(x)
-        # workers[aux] = xmlrpc.client.ServerProxy(x)
-        aux = aux + 1
-
-    def submit_task(args):
-        global workers
-        for x in workers:
-            results = x.funct(args)
 
 
 def menu():
@@ -42,35 +29,57 @@ def menu():
 
 
 class Client:
-    # Workers
     ex = True
 
     if __name__ == "__main__":
-
+        global workers
+        result = []
+        print("Connecting to workers...\n")
+        get_workers()
         while ex:
             menu()
             op = int(input())
             if op == 0:
                 ex = False
             elif op == 1:
-                file = input("Enter a file's name (without extension):\n")
-                file = file + ".csv"
-                print(Workers.submit_task(file))
-            # print(worker.head())
-        # elif op == 2:
-        #     label = input("From which colum do you want to know the minimum:\n")
-        #     # print("The minimum of " + label + " is " + worker.min('LonD'))
-        # elif op == 3:
-        #     label = input("From which colum do you want to know the maximum:\n")
-        #     # print("The minimum of " + label + " is " + worker.max('LonD'))
-        # elif op == 4:
-        #     # print("The columns of the dataframe are:\n" + worker.col())
-        # elif op == 5:
-        #     # print("The first five lines of the dataframe:\n" + worker.head())
-        # elif op == 6:
-        #     label = input("With what columns do you want to group by:\n")
-        #     # print("Dataframe grouped by" + label + "\n" + worker.groupby('City'))
-        # elif op == 7:
-        #     # print("The function items in the dataframe:\n" + worker.items())
-        else:
-            print("Option not valid chose another one")
+                for x in workers:
+                    file = input("Enter a file's name (without extension) for one worker:\n")
+                    file = file + ".csv"
+                    print(x.read(file))
+
+            elif op == 2:
+                label = input("From which colum do you want to know the minimum:\n")
+                for x in workers:
+                    result.append(x.min(label))
+                print("The minimum of " + label + " is " + str(min(result)))
+                result.clear()
+
+            elif op == 3:
+                label = input("From which colum do you want to know the maximum:\n")
+                for x in workers:
+                    result.append(x.max(label))
+                print("The minimum of " + label + " is " + str(max(result)))
+                result.clear()
+
+            elif op == 4:
+                print("The columns of the dataframe are:\n" + workers[0].col())
+
+            elif op == 5:
+                print("The first five lines of the dataframes:\n")
+                for x in workers:
+                    print(x.head()+"\n")
+
+            elif op == 6:
+                label = input("With what columns do you want to group by:\n")
+                print("Dataframe grouped by " + label + "\n")
+                for x in workers:
+                    print(x.groupby(label))
+
+            elif op == 7:
+                print("The function items in the dataframes:\n")
+                for x in workers:
+                    print(x.items())
+            else:
+                print("Option not valid chose another one")
+
+        print("Bye Bye!")

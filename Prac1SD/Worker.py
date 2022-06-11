@@ -2,11 +2,11 @@ import sys
 import pandas as pd
 import xmlrpc.client
 from xmlrpc.server import SimpleXMLRPCServer
-import numpy as np
-df = None
+df = pd.DataFrame()
 
 
 cluster = xmlrpc.client.ServerProxy('http://localhost:9000')
+
 # Add worker to cluster.
 print("Getting ready the worker...")
 port = input("In which port is the worker working?\n")
@@ -18,7 +18,7 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as server:
 
     def load_csv(name):
         global df
-        if df is None:
+        if df.empty:
             df = pd.read_csv(name)
             res = "File loaded!"
         else:
@@ -34,9 +34,9 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as server:
         return str(df[col].max(axis=0))
     server.register_function(maximum_function, 'max')
 
-    def isin_function(list):
+    def is_in_function(list):
         return str(df.isin(list))
-    server.register_function(isin_function, 'isin')
+    server.register_function(is_in_function, 'is_in')
 
     def columns_function():
         return str(df.columns.values)
@@ -47,9 +47,9 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as server:
         return str((func(2, 3)))
     server.register_function(apply_function, 'apply')
 
-    def groupby_function(label):
+    def group_by_function(label):
         return str(df.groupby([label]).mean())
-    server.register_function(groupby_function, 'groupby')
+    server.register_function(group_by_function, 'group_by')
 
     def items_function():
         return str(df.items)
@@ -66,5 +66,3 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as server:
     except KeyboardInterrupt:
         print("\nKeyboard interrupt received, exiting.")
         sys.exit(0)
-
-

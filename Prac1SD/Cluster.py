@@ -11,8 +11,9 @@ cont_workers = 0
 
 with SimpleXMLRPCServer(('localhost', 9000)) as cluster:
 
-    def close_conexion():
+    def close_connexion():
         sys.exit(0)
+
     def add_worker(url):
         global cont_workers
         workers[cont_workers] = url
@@ -31,4 +32,3 @@ with SimpleXMLRPCServer(('localhost', 9000)) as cluster:
     except KeyboardInterrupt:
         print("\nKeyboard interrupt received, exiting.")
         sys.exit(0)
-
