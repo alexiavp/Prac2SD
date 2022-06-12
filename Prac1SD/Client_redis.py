@@ -1,20 +1,16 @@
 import xmlrpc.client
 import redis
 
-r = redis.Redis('localhost')
+r = redis.Redis(host='localhost', decode_responses=True)
 workers = []
 cluster = xmlrpc.client.ServerProxy('http://localhost:9000')
 
 
 def get_workers():
-    global workers, cluster
-    aux = cluster.get()
-    w = aux.split('\'')
-    i = 0
-    for x in w:
-        if i % 2 == 1:
-            workers.append(xmlrpc.client.ServerProxy(x))
-        i = i + 1
+    global workers, r
+    w = []
+    for key in r.scan_iter("worker:*"):
+        workers.append(xmlrpc.client.ServerProxy(r.get(key)))
 
 
 def menu():

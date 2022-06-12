@@ -10,7 +10,7 @@ cluster = xmlrpc.client.ServerProxy('http://localhost:9000')
 # Add worker to cluster.
 print("Getting ready the worker...")
 port = input("In which port is the worker working?\n")
-print(cluster.add('http://localhost:'+str(port)))
+print(cluster.add("http://localhost:"+str(port)))
 
 
 # Create server
