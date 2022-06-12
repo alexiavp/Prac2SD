@@ -1,17 +1,17 @@
 import xmlrpc.client
-
+import redis
+r = redis.Redis('localhost')
 workers = []
 cluster = xmlrpc.client.ServerProxy('http://localhost:9000')
 
-
 def get_workers():
-    global workers, cluster
-    aux = cluster.get()
-    w = aux.split('\'')
+    global workers, r
+    w = r.smembers(pattern='url')
+    print (w)
     i = 0
     for x in w:
-        if i % 2 == 1:
-            workers.append(xmlrpc.client.ServerProxy(x))
+        #if i % 2 == 1:
+            #workers.append(xmlrpc.client.ServerProxy(x))
         i = i + 1
 
 
