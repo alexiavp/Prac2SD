@@ -13,8 +13,14 @@ port = input("In which port is the worker working?\n")
 print(cluster.add("http://localhost:"+str(port)))
 
 
+
+
 # Create server
 with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as server:
+    def ping():
+        print("Llego")
+        return True
+    server.register_function(ping, 'ping')
 
     def load_csv(name):
         global df
@@ -25,6 +31,8 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as server:
             res = "A file was already loaded!"
         return res
     server.register_function(load_csv, 'read')
+
+
 
     def minimum_function(col):
         return str(df[col].min(axis=0))
