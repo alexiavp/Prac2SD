@@ -1,7 +1,5 @@
 import xmlrpc.client
-import redis
 
-r = redis.Redis('localhost')
 workers = []
 cluster = xmlrpc.client.ServerProxy('http://localhost:9000')
 
