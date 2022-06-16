@@ -44,29 +44,39 @@ with SimpleXMLRPCServer(('localhost', port)) as cluster:
     cluster.register_function(get_workers, 'get')
 
 
-
+    def ping_m():
+        print("Llegomas")
+        return True
+    cluster.register_function(ping_m, 'ping')
     def ping_workers():
-        print("A ver")
         for url in workers:
             try:
                 print("Entro")
                 print(url)
                 worker = xmlrpc.client.ServerProxy(url)
-                print(worker)
                 print(workers)
                 worker.ping()
                 #worker.ping()
             except:
-                delete_worker(url)
+                print(url)
+                print("Borro")
+                if (url==("http://localhost:" + str(port))):
+                    print("Hello")
+                    random_url = random.choice(workers)
+                    print(random_url)
+                    be_master(random_url)
+                else:
+                    delete_worker(url)
     cluster.register_function(ping_workers, 'ping_w')
 
-
-    def be_master():
+    def be_master(url):
         print("Espero que no")
         global is_master
         is_master = True
         global port
         global cluster
+        port=url.split(':')[2]
+        print(port)
         cluster=SimpleXMLRPCServer(('localhost', port))
         print("I'm master")
         delete_worker("http://localhost:" + str(port))
@@ -74,21 +84,29 @@ with SimpleXMLRPCServer(('localhost', port)) as cluster:
 
     def ping_master():
         try:
-            cluster.ping()
+            print("13")
+            master = xmlrpc.client.ServerProxy("http://localhost:" + str(port))
+            print(master)
+            master.ping_m()
+            print("15")
         except:
             new_master = False
             while not new_master:
                 try:
-                    random_url = random.choice(workers)
+                    print("Fallo2")
+                    random_url = random.randint(1, cont_workers)
+                    print(workers[random_url])
+                    print("Fallo")
+                    delete_worker("http://localhost:" + str(port))
                     ##pings antes
-                    master = xmlrpc.client.ServerProxy(random_url)
-                    master.be_master()
+                    #master = xmlrpc.client.ServerProxy(random_url)
+                    #master.be_master()
                     new_master = True
                 except ConnectionRefusedError:
                     pass
                 except IndexError:
                     print("No more workers to become masters")
-                    #exit(1)
+                    exit(1)
         return 1
     cluster.register_function(ping_master, 'ping_m')
     # Run the server's main loop
@@ -98,12 +116,12 @@ with SimpleXMLRPCServer(('localhost', port)) as cluster:
         print("Ctrl+C to exit!")
         if not is_master:
             print("Hola")
-            #cluster.add_worker("http://localhost:" + str(port))
+            add_worker("http://localhost:" + str(port))
         while True:
             #if is_master:
             print("Hasta aqui")
             ping_workers()
-            print(workers)
+            #ping_master()
             print(cont_workers)
             #else:
                 #ping_master()
