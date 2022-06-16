@@ -75,11 +75,15 @@ with SimpleXMLRPCServer(('localhost', port)) as cluster:
         is_master = True
         global port
         global cluster
+        delete_worker("http://localhost:" + str(port))
+        print("Implosiono")
+        cluster.server_close()
+        print(workers)
         port=url.split(':')[2]
         print(port)
         cluster=SimpleXMLRPCServer(('localhost', port))
         print("I'm master")
-        delete_worker("http://localhost:" + str(port))
+
     cluster.register_function(be_master, 'be_master')
 
     def ping_master():
@@ -94,10 +98,10 @@ with SimpleXMLRPCServer(('localhost', port)) as cluster:
             while not new_master:
                 try:
                     print("Fallo2")
-                    random_url = random.randint(1, cont_workers)
-                    print(workers[random_url])
-                    print("Fallo")
-                    delete_worker("http://localhost:" + str(port))
+
+                    random_url = random.choice(workers)
+                    print(random_url)
+                    be_master(random_url)
                     ##pings antes
                     #master = xmlrpc.client.ServerProxy(random_url)
                     #master.be_master()
