@@ -79,9 +79,10 @@ with SimpleXMLRPCServer(('localhost', port)) as cluster:
         print("Implosiono")
         cluster.server_close()
         print(workers)
-        port=url.split(':')[2]
+        port = int(url.split(':')[2])
         print(port)
-        cluster=SimpleXMLRPCServer(('localhost', port))
+        cluster = SimpleXMLRPCServer(('localhost', port))
+        add_worker("http://localhost:" + str(port))
         print("I'm master")
 
     cluster.register_function(be_master, 'be_master')
@@ -98,7 +99,6 @@ with SimpleXMLRPCServer(('localhost', port)) as cluster:
             while not new_master:
                 try:
                     print("Fallo2")
-
                     random_url = random.choice(workers)
                     print(random_url)
                     be_master(random_url)
@@ -133,5 +133,10 @@ with SimpleXMLRPCServer(('localhost', port)) as cluster:
 
     except KeyboardInterrupt:
         print("\nKeyboard interrupt received, exiting.")
-        sys.exit(0)
+        print("Fallo2")
+
+        random_url = random.choice(workers)
+        print(random_url)
+        be_master(random_url)
+        # sys.exit(0)
 

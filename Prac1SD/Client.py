@@ -84,7 +84,7 @@ def call_option():
                 print(x.apply(label))
 
         elif op == 9:
-            label = input("Which elements do you want to know if are in (max 3):\n")
+            label = input("Which element do you want to know if is in the Dataframe:\n")
             for x in workers:
                 result.append(x.is_in(label))
             if 'True' in result:
