@@ -87,7 +87,7 @@ with SimpleXMLRPCServer(('localhost', port)) as cluster:
             print("13")
             master = xmlrpc.client.ServerProxy("http://localhost:" + str(port))
             print(master)
-            master.ping_m()
+            master.ping()
             print("15")
         except:
             new_master = False
@@ -121,7 +121,7 @@ with SimpleXMLRPCServer(('localhost', port)) as cluster:
             #if is_master:
             print("Hasta aqui")
             ping_workers()
-            #ping_master()
+            ping_master()
             print(cont_workers)
             #else:
                 #ping_master()
