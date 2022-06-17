@@ -30,8 +30,9 @@ except:
     r.set("Master", 9000)
     port = r.get("Master")
     print("despues set" + str(port))
+    #workers.append("http://localhost:" + str(port))
 
-with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as cluster:
+with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True, allow_none=True) as cluster:
     def close_connexion():
         sys.exit(0)
 
@@ -44,6 +45,13 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as cluster:
         print("Workers: " + str(workers))
         cont_workers = cont_workers + 1
         print("Contador: " + str(cont_workers))
+        if port == port_m:
+            for w in workers:
+                print("Aqui")
+                worker = xmlrpc.client.ServerProxy(w)
+                print("Aqui1"+str(worker))
+                worker.add(url)
+                print("Aqui2")
         return "Worker added successfully!"
 
 
@@ -63,7 +71,11 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as cluster:
         global workers
         workers.remove(url)
         cont_workers = cont_workers - 1
-        return "Worker added successfully!"
+        if port != port_m:
+            for w in workers:
+                worker = xmlrpc.client.ServerProxy(w)
+                worker.delete(url)
+        return "Worker deleted successfully!"
 
 
     cluster.register_function(delete_worker, 'delete')
@@ -77,6 +89,7 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as cluster:
 
 
     def ping_workers():
+        global master, port_m
         for url in workers:
             try:
                 port_m = r.get("Master")
@@ -90,76 +103,75 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as cluster:
                     print("Workers: " + str(workers))
                     worker.ping()
             except:
-                try:
-                    # port_m = r.get("Master")
-                    # if ("http://localhost:" + str(port_m)) == url:
-                    #     print("Borramos a " + str(url))
-                    #     print("Borro worker")
+                port_m = r.get("Master")
+                if ("http://localhost:" + str(port_m)) == url:
+                    master.become_master()
+                else:
+                    print("Borramos a " + str(url))
+                    print("Borro worker")
                     delete_worker(url)
-                except ConnectionRefusedError:
-                    pass
-                except IndexError:
-                    print("No more workers to become masters")
-                    exit(1)
 
 
     cluster.register_function(ping_workers, 'ping_w')
 
-    #     def become_master(url):
-    #         print("Nuevo master")
-    #         global port
-    #         global cluster
-    #
-    #         print("Cerramos antiguo")
-    #         cluster.server_close()
-    #         print("Workers: " + str(workers))
-    #         port = int(url.split(':')[2])
-    #         print("Nuevo puerto:" + str(port))
-    #         worker = xmlrpc.client.ServerProxy(url)
-    #         worker.quit()
-    #         delete_worker("http://localhost:" + str(port))
-    #         print("Workers: " + str(workers))
-    #         print("Nuevo cluster: " + str(cluster))
-    #         cluster = SimpleXMLRPCServer(('localhost', port))
-    #         add_worker("http://localhost:" + str(port))
-    #         print("I'm master " + str(cluster))
-    #         print("Workers: " + str(workers))
-    #
-    #
-    #     cluster.register_function(become_master, 'become_master')
-    #
+
+    def become_master():
+        print("Nuevo master")
+        global port, master, port_m
+        try:
+            print(workers)
+            # random_url = random.choice(workers)
+            # print(random_url)
+            # port_m = int(random_url.split(':')[2])
+            # r.set("Master", port_m)
+            print("Workers: " + str(workers))
+            delete_worker('http://localhost:' + str(port))
+            port_m = port
+            r.set("Master", port)
+            print("Workers: " + str(workers))
+            master = xmlrpc.client.ServerProxy('http://localhost:' + str(port_m))
+
+        except ConnectionRefusedError:
+            pass
+        except IndexError:
+            print("There's no one to become masters")
+            exit(1)
+
+
+    cluster.register_function(become_master, 'become_master')
+
     # Run the server's main loop
     try:
         start = threading.Thread(target=cluster.serve_forever, daemon=True)
         start.start()
         print("Ctrl+C to exit!")
-        print("Hola")
-        master.add("http://localhost:" + str(port))
+        port_m = r.get("Master")
+        if port != port_m:
+            master.add("http://localhost:" + str(port))
         while True:
-            print("Hasta aqui")
-            # master.add("http://localhost:" + str(port))
-            ping_workers()
+            port_m = r.get("Master")
+            print("Hasta aqui"+str(port_m)+" "+str(port))
+            if port_m == port:
+                ping_workers()
+            else:
+                try:
+                    master.ping()
+                except:
+                    random_url = random.choice(workers)
+                    print(random_url)
+                    port_m = int(random_url.split(':')[2])
+                    master = xmlrpc.client.ServerProxy('http://localhost:' + str(port_m))
+                    master.become_master()
             print(cont_workers)
             time.sleep(1)
 
     except KeyboardInterrupt:
-        # try:
         print("\nKeyboard interrupt received, exiting.")
+        # become_master()
         close_connexion()
-        # print("Elimina" + str(port))
-        # delete_worker("http://localhost:" + str(port))
-        # print(workers)
-        # random_url = random.choice(workers)
-        # print(random_url)
-        # master.become_master(random_url)
-    # except ConnectionRefusedError:
-    #     pass
-    # except IndexError:
-    #     print("No more workers to become masters")
-    #     exit(1)
 
-#
-#         # sys.exit(0)
+
+
 #
 #         def load_csv(name):
 #             global df
