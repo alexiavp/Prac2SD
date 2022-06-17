@@ -57,52 +57,53 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as cluster:
 
     cluster.register_function(ping_m, 'ping')
 
-    #
-    #
-    #     def delete_worker(url):
-    #         global cont_workers
-    #         global workers
-    #         workers.remove(url)
-    #         cont_workers = cont_workers - 1
-    #         return "Worker added successfully!"
-    #
-    #
-    #     cluster.register_function(delete_worker, 'delete')
-    #
-    #
-    #     def get_workers():
-    #         return str(workers)
-    #
-    #
-    #     cluster.register_function(get_workers, 'get')
-    #
-    #
 
-    #
-    #
-    #     def ping_workers():
-    #         for url in workers:
-    #             try:
-    #                 print("Hago ping workers")
-    #                 print("Ping a " + str(url))
-    #                 worker = xmlrpc.client.ServerProxy(url)
-    #                 print("Workers: " + str(workers))
-    #                 worker.ping()
-    #             except:
-    #                 try:
-    #                     print("Borramos a " + str(url))
-    #                     print("Borro worker")
-    #                     delete_worker(url)
-    #                 except ConnectionRefusedError:
-    #                     pass
-    #                 except IndexError:
-    #                     print("No more workers to become masters")
-    #                     exit(1)
-    #
-    #
-    #     cluster.register_function(ping_workers, 'ping_w')
-    #
-    #
+    def delete_worker(url):
+        global cont_workers
+        global workers
+        workers.remove(url)
+        cont_workers = cont_workers - 1
+        return "Worker added successfully!"
+
+
+    cluster.register_function(delete_worker, 'delete')
+
+
+    def get_workers():
+        return str(workers)
+
+
+    cluster.register_function(get_workers, 'get')
+
+
+    def ping_workers():
+        for url in workers:
+            try:
+                port_m = r.get("Master")
+                if ("http://localhost:" + str(port_m)) == url:
+                    print("soy master")
+                else:
+                    print("Hago ping workers")
+                    print("Ping a " + str(url))
+                    worker = xmlrpc.client.ServerProxy(url)
+                    print("Workers: " + str(workers))
+                    worker.ping()
+            except:
+                try:
+                    # port_m = r.get("Master")
+                    # if ("http://localhost:" + str(port_m)) == url:
+                    #     print("Borramos a " + str(url))
+                    #     print("Borro worker")
+                    delete_worker(url)
+                except ConnectionRefusedError:
+                    pass
+                except IndexError:
+                    print("No more workers to become masters")
+                    exit(1)
+
+
+    cluster.register_function(ping_workers, 'ping_w')
+
     #     def become_master(url):
     #         print("Nuevo master")
     #         global port
@@ -136,23 +137,25 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as cluster:
         while True:
             print("Hasta aqui")
             # master.add("http://localhost:" + str(port))
-            # ping_workers()
+            ping_workers()
             print(cont_workers)
             time.sleep(1)
 
     except KeyboardInterrupt:
-        try:
-            print("Elimina" + str(port))
-            # delete_worker("http://localhost:" + str(port))
-            print(workers)
-            random_url = random.choice(workers)
-            print(random_url)
-            # become_master(random_url)
-        except ConnectionRefusedError:
-            pass
-        except IndexError:
-            print("No more workers to become masters")
-            exit(1)
+        # try:
+        print("\nKeyboard interrupt received, exiting.")
+        close_connexion()
+        # print("Elimina" + str(port))
+        # delete_worker("http://localhost:" + str(port))
+        # print(workers)
+        # random_url = random.choice(workers)
+        # print(random_url)
+        # master.become_master(random_url)
+    # except ConnectionRefusedError:
+    #     pass
+    # except IndexError:
+    #     print("No more workers to become masters")
+    #     exit(1)
 
 #
 #         # sys.exit(0)
