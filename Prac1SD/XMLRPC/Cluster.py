@@ -10,13 +10,21 @@ with SimpleXMLRPCServer(('localhost', 9000)) as cluster:
 
 
     def add_worker(url):
-        global cont_workers
-        workers[cont_workers] = url
+        global cont_workers, workers
+        workers.append(url)
         cont_workers = cont_workers + 1
         return "Worker added successfully!"
 
     cluster.register_function(add_worker, 'add')
 
+    def delete_worker(url):
+        global cont_workers, workers
+        workers.remove(url)
+        cont_workers = cont_workers - 1
+        return "Worker deleted successfully!"
+
+
+    cluster.register_function(delete_worker, 'delete')
 
     def get_workers():
         return str(workers)

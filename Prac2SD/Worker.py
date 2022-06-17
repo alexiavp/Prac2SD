@@ -16,7 +16,7 @@ print(cluster.add("http://localhost:" + str(port)))
 # Create server
 with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as server:
     def ping():
-        print("Llego")
+        print("Ping")
         return True
 
 
