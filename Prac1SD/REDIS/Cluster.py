@@ -38,4 +38,3 @@ with SimpleXMLRPCServer(('localhost', 9000)) as cluster:
     except KeyboardInterrupt:
         print("\nKeyboard interrupt received, exiting.")
         sys.exit(0)
-
