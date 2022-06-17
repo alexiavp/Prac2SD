@@ -82,6 +82,7 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as cluster:
                 port_m = r.get("Master")
                 if ("http://localhost:" + str(port_m)) == url:
                     print("soy master")
+                    master.ping()
                 else:
                     print("Hago ping workers")
                     print("Ping a " + str(url))
