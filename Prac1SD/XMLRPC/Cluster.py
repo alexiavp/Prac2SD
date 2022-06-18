@@ -5,14 +5,12 @@ workers = {}
 cont_workers = 0
 
 with SimpleXMLRPCServer(('localhost', 9000)) as cluster:
-    def close_connexion():
-        sys.exit(0)
-
-
+    #####################
+    # Cluster functions #
+    #####################
     def add_worker(url):
         global cont_workers, workers
         workers.append(url)
-        cont_workers = cont_workers + 1
         return "Worker added successfully!"
 
     cluster.register_function(add_worker, 'add')
@@ -20,7 +18,6 @@ with SimpleXMLRPCServer(('localhost', 9000)) as cluster:
     def delete_worker(url):
         global cont_workers, workers
         workers.remove(url)
-        cont_workers = cont_workers - 1
         return "Worker deleted successfully!"
 
 
@@ -31,7 +28,9 @@ with SimpleXMLRPCServer(('localhost', 9000)) as cluster:
 
     cluster.register_function(get_workers, 'get')
 
-    # Run the server's main loop
+    #######################
+    # Cluster's main loop #
+    #######################
     try:
         print("Ctrl+C to exit!")
         cluster.serve_forever()

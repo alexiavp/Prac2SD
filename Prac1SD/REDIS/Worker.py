@@ -12,9 +12,11 @@ port = input("In which port is the worker working?\n")
 cluster.set("worker:"+str(port), ("http://localhost:"+str(port)))
 
 
-# Create server
+# Create Worker
 with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as server:
-
+    ####################
+    # Worker functions #
+    ####################
     def load_csv(name):
         global df
         if df.empty:
@@ -34,6 +36,7 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as server:
     server.register_function(maximum_function, 'max')
 
     def is_in_function(label):
+        # noinspection PyTypeChecker
         return str(df.isin([label]).any(axis=None))
     server.register_function(is_in_function, 'is_in')
 
@@ -60,7 +63,9 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as server:
         return str(df.head(5))
     server.register_function(head_function, 'head')
 
-    # Run the server's main loop
+    ######################
+    # Worker's main loop #
+    ######################
     try:
         print("Ctrl+C to exit!")
         server.serve_forever()

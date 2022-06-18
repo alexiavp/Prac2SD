@@ -3,6 +3,10 @@ import xmlrpc.client
 workers = []
 cluster = xmlrpc.client.ServerProxy('http://localhost:9000')
 
+####################
+# Client functions #
+####################
+
 
 def get_workers():
     global workers, cluster
@@ -98,6 +102,9 @@ def call_option():
 
 
 class Client:
+    ########################
+    # Client main function #
+    ########################
     if __name__ == "__main__":
         global workers
         print("Connecting to workers...\n")

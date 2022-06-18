@@ -1,4 +1,3 @@
-import threading
 import xmlrpc.client
 import redis
 
@@ -9,20 +8,30 @@ workers = []
 def get_workers():
     global workers, r
     workers.clear()
-    master = xmlrpc.client.ServerProxy("http://localhost:"+str(r.get("Master")))
-    aux = master.get()
-    w = aux.split('\'')
-    i = 0
-    for x in w:
-        if i % 2 == 1:
-            workers.append(xmlrpc.client.ServerProxy(x))
-        i = i + 1
+    port_m = r.get("Master")
+    if port_m is not None:
+        master = xmlrpc.client.ServerProxy("http://localhost:" + str(r.get("Master")))
+        aux = master.get()
+        w = aux.split('\'')
+        i = 0
+        for x in w:
+            if i % 2 == 1:
+                workers.append(xmlrpc.client.ServerProxy(x))
+            i = i + 1
+        if workers:
+            # print("Connected to: " + str(workers))
+            for x in workers:
+                x.read("cities.csv")
+        else:
+            print("No workers available!")
+    else:
+        print("No master to connect with!")
 
 
 def menu():
     print("Choose a function for the workers:")
     print("0. Exit!")
-    print("1. Read file")
+    print("1. Show workers")
     print("2. Get the minimum")
     print("3. Get the maximum")
     print("4. Get labels")
@@ -34,19 +43,15 @@ def menu():
     print("Option chosen:\n")
 
 
-
 class Client:
     if __name__ == "__main__":
         global workers
         ex = False
         result = []
         get_workers()
-        print(workers)
         sub = r.pubsub()
         sub.psubscribe("worker:*")
         while not ex:
-            print(workers)
-
             menu()
             op = int(input())
             if op == 0:
@@ -55,17 +60,13 @@ class Client:
                 message = sub.get_message()
                 if message is not None:
                     get_workers()
-                print(workers)
                 for x in workers:
-                    file = input("Enter a file's name (without extension) for one worker:\n")
-                    file = file + ".csv"
-                    print(x.read(file))
+                    print("Worker: " + str(x))
 
             elif op == 2:
                 message = sub.get_message()
                 if message is not None:
                     get_workers()
-                print(workers)
                 label = input("From which colum do you want to know the minimum:\n")
                 for x in workers:
                     result.append(x.min(label))
@@ -87,14 +88,12 @@ class Client:
                 message = sub.get_message()
                 if message is not None:
                     get_workers()
-                print(workers)
                 print("The columns of the dataframe are:\n" + workers[0].col())
 
             elif op == 5:
                 message = sub.get_message()
                 if message is not None:
                     get_workers()
-                print(workers)
                 print("The first five lines of the dataframes:\n")
                 for x in workers:
                     print(x.head() + "\n")
@@ -103,7 +102,6 @@ class Client:
                 message = sub.get_message()
                 if message is not None:
                     get_workers()
-                print(workers)
                 label = input("With what columns do you want to group by:\n")
                 print("Dataframe grouped by " + label + "\n")
                 for x in workers:
@@ -113,7 +111,6 @@ class Client:
                 message = sub.get_message()
                 if message is not None:
                     get_workers()
-                print(workers)
                 print("The function items in the dataframes:\n")
                 for x in workers:
                     print(x.items())
@@ -122,7 +119,6 @@ class Client:
                 message = sub.get_message()
                 if message is not None:
                     get_workers()
-                print(workers)
                 label = input("With what columns do you want to do the function apply:\n")
                 print("Dataframe with apply by" + label + "\n")
                 for x in workers:
@@ -132,7 +128,6 @@ class Client:
                 message = sub.get_message()
                 if message is not None:
                     get_workers()
-                print(workers)
                 label = input("Which element do you want to know if is in the Dataframe:\n")
                 for x in workers:
                     result.append(x.is_in(label))
@@ -146,3 +141,4 @@ class Client:
                 print("Option not valid chose another one")
 
         print("Bye Bye!")
+        r.flushall()

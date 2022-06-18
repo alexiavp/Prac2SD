@@ -5,6 +5,10 @@ r = redis.Redis(host='localhost', decode_responses=True)
 workers = []
 
 
+####################
+# Client functions #
+####################
+
 def get_workers():
     global workers, r
     for key in r.scan_iter("worker:*"):
@@ -94,6 +98,9 @@ def call_option():
 
 
 class Client:
+    ########################
+    # Client main function #
+    ########################
     if __name__ == "__main__":
         global workers
         print("Connecting to workers...\n")
