@@ -4,7 +4,6 @@ import time
 import pandas as pd
 import xmlrpc.client
 from xmlrpc.server import SimpleXMLRPCServer
-import random
 import redis
 
 df = pd.DataFrame()
@@ -32,6 +31,78 @@ except:
     print("despues set" + str(port))
 
 with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True, allow_none=True) as cluster:
+    def load_csv(name):
+        global df
+        if df.empty:
+            df = pd.read_csv(name)
+            res = "File loaded!"
+        else:
+            res = "A file was already loaded!"
+        return res
+
+
+    cluster.register_function(load_csv, 'read')
+
+
+    def minimum_function(col):
+        return str(df[col].min(axis=0))
+
+
+    cluster.register_function(minimum_function, 'min')
+
+
+    def maximum_function(col):
+        return str(df[col].max(axis=0))
+
+
+    cluster.register_function(maximum_function, 'max')
+
+
+    def is_in_function(label):
+        return str(df.isin([label]).any(axis=None))
+
+
+    cluster.register_function(is_in_function, 'is_in')
+
+
+    def columns_function():
+        return str(df.columns.values)
+
+
+    cluster.register_function(columns_function, 'col')
+
+
+    def apply_function(label):
+        return str(df.apply(lambda x: x[label].upper(), axis=1))
+
+
+    cluster.register_function(apply_function, 'apply')
+
+
+    def group_by_function(label):
+        return str(df.groupby(label).sum())
+
+
+    cluster.register_function(group_by_function, 'group_by')
+
+
+    def items_function():
+        result = ""
+        for label, content in df.items():
+            result = result + str(content) + " "
+        return str(result)
+
+
+    cluster.register_function(items_function, 'items')
+
+
+    def head_function():
+        return str(df.head(5))
+
+
+    cluster.register_function(head_function, 'head')
+
+
     def close_connexion():
         sys.exit(0)
 
@@ -40,6 +111,7 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True, allow_none=T
         global cont_workers
         global workers
         print("Add worker")
+        r.publish("worker:" + str(port), ("ADD:http://localhost:" + str(port)))
         cont_workers = cont_workers + 1
         print("Contador: " + str(cont_workers))
         if port == port_m:
@@ -49,7 +121,6 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True, allow_none=T
             new_worker = xmlrpc.client.ServerProxy(url)
             for w in workers:
                 new_worker.add(w)
-
 
         workers.append(url)
         print("Workers: " + str(workers))
@@ -72,6 +143,7 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True, allow_none=T
         global workers
         workers.remove(url)
         print("Delete worker")
+        r.publish("worker:" + str(port), ("DELETE: http://localhost:" + str(port)))
         cont_workers = cont_workers - 1
         if port == port_m:
             for w in workers:
@@ -127,7 +199,6 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True, allow_none=T
             r.set("Master", port)
             print("Workers: " + str(workers))
             delete_worker('http://localhost:' + str(port))
-            # master = xmlrpc.client.ServerProxy('http://localhost:' + str(port_m))
 
         except ConnectionRefusedError:
             pass
@@ -167,75 +238,3 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True, allow_none=T
     except KeyboardInterrupt:
         print("\nKeyboard interrupt received, exiting.")
         close_connexion()
-
-#
-#         def load_csv(name):
-#             global df
-#             if df.empty:
-#                 df = pd.read_csv(name)
-#                 res = "File loaded!"
-#             else:
-#                 res = "A file was already loaded!"
-#             return res
-#
-#
-#         cluster.register_function(load_csv, 'read')
-#
-#
-#         def minimum_function(col):
-#             return str(df[col].min(axis=0))
-#
-#
-#         cluster.register_function(minimum_function, 'min')
-#
-#
-#         def maximum_function(col):
-#             return str(df[col].max(axis=0))
-#
-#
-#         cluster.register_function(maximum_function, 'max')
-#
-#
-#         def is_in_function(label):
-#             return str(df.isin([label]).any(axis=None))
-#
-#
-#         cluster.register_function(is_in_function, 'is_in')
-#
-#
-#         def columns_function():
-#             return str(df.columns.values)
-#
-#
-#         cluster.register_function(columns_function, 'col')
-#
-#
-#         def apply_function(label):
-#             return str(df.apply(lambda x: x[label].upper(), axis=1))
-#
-#
-#         cluster.register_function(apply_function, 'apply')
-#
-#
-#         def group_by_function(label):
-#             return str(df.groupby(label).sum())
-#
-#
-#         cluster.register_function(group_by_function, 'group_by')
-#
-#
-#         def items_function():
-#             result = ""
-#             for label, content in df.items():
-#                 result = result + str(content) + " "
-#             return str(result)
-#
-#
-#         cluster.register_function(items_function, 'items')
-#
-#
-#         def head_function():
-#             return str(df.head(5))
-#
-#
-#         cluster.register_function(head_function, 'head')
