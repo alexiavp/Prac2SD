@@ -30,7 +30,6 @@ except:
     r.set("Master", 9000)
     port = r.get("Master")
     print("despues set" + str(port))
-    #workers.append("http://localhost:" + str(port))
 
 with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True, allow_none=True) as cluster:
     def close_connexion():
@@ -41,17 +40,19 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True, allow_none=T
         global cont_workers
         global workers
         print("Add worker")
-        workers.append(url)
-        print("Workers: " + str(workers))
         cont_workers = cont_workers + 1
         print("Contador: " + str(cont_workers))
         if port == port_m:
             for w in workers:
-                print("Aqui")
                 worker = xmlrpc.client.ServerProxy(w)
-                print("Aqui1"+str(worker))
                 worker.add(url)
-                print("Aqui2")
+            new_worker = xmlrpc.client.ServerProxy(url)
+            for w in workers:
+                new_worker.add(w)
+
+
+        workers.append(url)
+        print("Workers: " + str(workers))
         return "Worker added successfully!"
 
 
@@ -70,11 +71,13 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True, allow_none=T
         global cont_workers
         global workers
         workers.remove(url)
+        print("Delete worker")
         cont_workers = cont_workers - 1
-        if port != port_m:
+        if port == port_m:
             for w in workers:
                 worker = xmlrpc.client.ServerProxy(w)
                 worker.delete(url)
+        print("Workers: " + str(workers))
         return "Worker deleted successfully!"
 
 
@@ -119,17 +122,12 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True, allow_none=T
         print("Nuevo master")
         global port, master, port_m
         try:
-            print(workers)
-            # random_url = random.choice(workers)
-            # print(random_url)
-            # port_m = int(random_url.split(':')[2])
-            # r.set("Master", port_m)
             print("Workers: " + str(workers))
-            delete_worker('http://localhost:' + str(port))
             port_m = port
             r.set("Master", port)
             print("Workers: " + str(workers))
-            master = xmlrpc.client.ServerProxy('http://localhost:' + str(port_m))
+            delete_worker('http://localhost:' + str(port))
+            # master = xmlrpc.client.ServerProxy('http://localhost:' + str(port_m))
 
         except ConnectionRefusedError:
             pass
@@ -148,29 +146,27 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True, allow_none=T
         port_m = r.get("Master")
         if port != port_m:
             master.add("http://localhost:" + str(port))
+            add_worker("http://localhost:" + str(port))
         while True:
             port_m = r.get("Master")
-            print("Hasta aqui"+str(port_m)+" "+str(port))
+            print("Hasta aqui " + str(port_m) + " " + str(port))
             if port_m == port:
                 ping_workers()
             else:
                 try:
                     master.ping()
                 except:
-                    random_url = random.choice(workers)
-                    print(random_url)
-                    port_m = int(random_url.split(':')[2])
+                    print("Master no responde")
+                    new_master = workers[0]
+                    port_m = int(new_master.split(':')[2])
                     master = xmlrpc.client.ServerProxy('http://localhost:' + str(port_m))
                     master.become_master()
             print(cont_workers)
-            time.sleep(1)
+            time.sleep(2)
 
     except KeyboardInterrupt:
         print("\nKeyboard interrupt received, exiting.")
-        # become_master()
         close_connexion()
-
-
 
 #
 #         def load_csv(name):
