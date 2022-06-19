@@ -24,7 +24,7 @@ with SimpleXMLRPCServer(('localhost', 9000)) as cluster:
     cluster.register_function(delete_worker, 'delete')
 
     def get_workers():
-        return str(workers)
+        return str(workers.copy())
 
     cluster.register_function(get_workers, 'get')
 
