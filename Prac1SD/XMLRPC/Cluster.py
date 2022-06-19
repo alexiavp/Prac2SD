@@ -1,22 +1,21 @@
 import sys
 from xmlrpc.server import SimpleXMLRPCServer
 
-workers = {}
-cont_workers = 0
+workers = []
 
 with SimpleXMLRPCServer(('localhost', 9000)) as cluster:
     #####################
     # Cluster functions #
     #####################
     def add_worker(url):
-        global cont_workers, workers
+        global workers
         workers.append(url)
         return "Worker added successfully!"
 
     cluster.register_function(add_worker, 'add')
 
     def delete_worker(url):
-        global cont_workers, workers
+        global workers
         workers.remove(url)
         return "Worker deleted successfully!"
 
