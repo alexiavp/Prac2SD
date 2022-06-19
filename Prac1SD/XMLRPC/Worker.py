@@ -68,8 +68,8 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True) as server:
     ######################
     try:
         print("Ctrl+C to exit!")
-        cluster.delete("http://localhost:"+str(port))
         server.serve_forever()
     except KeyboardInterrupt:
         print("\nKeyboard interrupt received, exiting.")
+        cluster.delete("http://localhost:"+str(port))
         sys.exit(0)

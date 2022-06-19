@@ -133,13 +133,9 @@ with SimpleXMLRPCServer(('localhost', int(port)), logRequests=True, allow_none=T
         global master, port_m
         for url in workers:
             try:
-                port_m = r.get("Master")
-                if ("http://localhost:" + str(port_m)) == url:
-                    master.ping()
-                else:
-                    print("Ping to workers!")
-                    worker = xmlrpc.client.ServerProxy(url)
-                    worker.ping()
+                print("Ping to workers!")
+                worker = xmlrpc.client.ServerProxy(url)
+                worker.ping()
             except (Exception,):
                 print("Worker disconnected!")
                 delete_worker(url)
