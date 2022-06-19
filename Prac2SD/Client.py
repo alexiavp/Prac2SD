@@ -77,7 +77,6 @@ class Client:
                 message = sub.get_message()
                 if message is not None:
                     get_workers()
-                print(workers)
                 label = input("From which colum do you want to know the maximum:\n")
                 for x in workers:
                     result.append(x.max(label))
